@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 class HippodromeTest {
 
@@ -32,7 +31,7 @@ class HippodromeTest {
     @Test
     void ifEmptyWritesMessage(){
         IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,() -> new Hippodrome(new ArrayList<>()));
-        assertEquals("Horses cannot be null.", illegalArgumentException.getMessage());
+        assertEquals("Horses cannot be empty.", illegalArgumentException.getMessage());
     }
 
     @Test
@@ -62,17 +61,29 @@ class HippodromeTest {
 
     @Test
     void testMoveCallsMoveOnAllHorses() {
-        List<Horse> mockedHorses = IntStream.range(0, 50)
-                .mapToObj(i -> mock(Horse.class))
+        class HorseWithMoveCounter extends Horse {
+            int moveCount = 0;
+
+            public HorseWithMoveCounter() {
+                super("TestHorse", 1.0, 0.0);
+            }
+
+            @Override
+            public void move() {
+                moveCount++;
+            }
+        }
+
+        List<Horse> horses = IntStream.range(0, 50)
+                .mapToObj(i -> new HorseWithMoveCounter())
                 .collect(Collectors.toList());
 
-        Hippodrome hippodrome = new Hippodrome(mockedHorses);
+        Hippodrome hippodrome = new Hippodrome(horses);
 
         hippodrome.move();
 
-
-        mockedHorses.forEach(horseMock ->
-                verify(horseMock).move()
+        horses.forEach(horse ->
+                assertEquals(1, ((HorseWithMoveCounter) horse).moveCount)
         );
     }
 
